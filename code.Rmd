@@ -1,0 +1,253 @@
+---
+title: "Figures"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.width = 9)
+library(tidyverse)
+
+options(scipen=999)
+theme_set(theme_bw())
+
+df <- read_csv("data.csv")
+```
+
+## Figure 2
+Knowledge of Kumyk among men in Chuni for the whole time period
+
+```{r}
+df %>% 
+  filter(sex == "m",
+         residence == "Chuni",
+         year_of_birth_dec > 1890,
+         year_of_birth_dec < 2000,
+         str_detect(language, "Kumyk")) %>% 
+  group_by(year_of_birth_dec, distance) %>% 
+  count(knowledge) %>% 
+  spread(knowledge, n, fill = 0) %>% 
+  mutate(knowledge = round(`1`/(`1`+`0`)*100),
+         number_of_people = `1`+`0`) %>% 
+  ggplot(aes(year_of_birth_dec, knowledge))+
+  geom_col()+
+  scale_x_continuous(breaks = c(189:200*10),
+                     labels = paste0(c(189:200*10), "s"))+
+  scale_y_continuous(breaks = 0:5*20,
+                     labels = paste0(c(0:5*20), "%"),
+                     limits = c(0, 100))+
+  labs(y = "", x = "")+
+  scale_fill_grey()
+```
+
+## Figure 3
+Knowledge of Tsudakhar and Akusha among both genders in Chuni for the whole time period
+
+```{r}
+df %>% 
+   filter(residence == "Chuni",
+          year_of_birth_dec > 1890,
+          year_of_birth_dec < 2000,
+          str_detect(language, "Tsudakhar|Dargwa")) %>% 
+  spread(language, knowledge) %>% 
+  mutate(lang_knowledge = ifelse(Tsudakhar == 1, 1, ifelse(Dargwa == 1, 1, 0))) %>% 
+   group_by(year_of_birth_dec, sex) %>% 
+   mutate(lang_knowledge = sum(lang_knowledge)/n()*100,
+          number_of_people = n()) %>%
+   select(sex, year_of_birth_dec, lang_knowledge, number_of_people) %>% 
+   ggplot(aes(year_of_birth_dec, lang_knowledge, fill = sex,
+              label = paste0(round(lang_knowledge, 2), "%")))+
+   geom_col(position = "dodge")+
+   labs(y = "", x = "")+
+   scale_fill_grey()+
+   scale_x_continuous(breaks = c(189:200*10),
+                     labels = paste0(c(189:200*10), "s"))+
+   scale_y_continuous(breaks = 0:5*20,
+                     labels = paste0(c(0:5*20), "%"),
+                     limits = c(0, 100))+
+  geom_hline(yintercept = 100, linetype = 3)+
+    theme(legend.title = element_blank())
+```
+
+## Figure 4
+Knowledge of distant languages in Daghestan1 among men and women (born in 1900 – 1909)
+
+```{r}
+df %>%
+  filter(str_detect(distance, "distant")) %>%
+  group_by(index, residence) %>% 
+  mutate(n_knowledge = sum(knowledge)) %>%
+  select(index, residence, year_of_birth_dec, sex, n_knowledge) %>% 
+  distinct() %>% 
+  group_by(year_of_birth_dec, sex) %>% 
+  mutate(number_of_people = n()) %>% 
+  group_by(year_of_birth_dec, sex, n_knowledge, number_of_people) %>% 
+  summarise(n = n()) %>% 
+  ungroup() %>% 
+  mutate(r_knowledge = n/(number_of_people)*100,
+         n_knowledge = factor(n_knowledge),
+         year_of_birth_dec_s = paste0(year_of_birth_dec, "s")) %>%
+  ggplot(aes(sex, r_knowledge, fill = n_knowledge))+
+  geom_col(position = position_stack(reverse = T))+
+  labs(y = "", x = "")+
+  scale_fill_grey()+
+  scale_y_continuous(breaks = 0:5*20,
+                     labels = paste0(c(0:5*20), "%"))+
+  facet_wrap(~year_of_birth_dec_s, strip.position = "bottom", nrow = 1)+
+  theme(panel.spacing =unit(.1, "lines"),
+        panel.border = element_blank(), 
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        legend.title=element_blank(),
+        axis.ticks = element_blank())
+```
+
+
+## Figure 7
+Knowledge of Russian among men and women in Daghestan for the whole time period
+
+```{r}
+df %>%
+  filter(str_detect(language, "Russian")) %>% 
+  spread(language, knowledge) %>%
+  group_by(year_of_birth_dec, sex) %>%
+  mutate(lang_knowledge = sum(Russian)/n()*100,
+         number_of_people = n()) %>%
+  ggplot(aes(year_of_birth_dec, lang_knowledge, fill = sex))+
+  geom_col(position = "dodge")+
+  labs(y = "", x = "")+
+  scale_fill_grey()+
+  scale_x_continuous(breaks = c(189:200*10),
+                     labels = paste0(c(189:200*10), "s"))+
+  scale_y_continuous(breaks = 0:5*20,
+                     labels = paste0(c(0:5*20), "%"),
+                     limits = c(0, 100))+
+  geom_hline(yintercept = 100, linetype = 3)+
+  theme(legend.title = element_blank())
+```
+
+
+## Figure 8
+Knowledge of Russian (green) and knowledge of distant languages (brown) among males in Daghestan during the whole time period
+
+```{r}
+df %>%
+  filter(str_detect(distance, "distant|Russian"),
+         sex == "m") %>% 
+  group_by(index, residence, distance) %>% 
+  mutate(n_knowledge = if_else(sum(knowledge) > 0, 1, 0)) %>% 
+  distinct(index, residence, year_of_birth_dec, distance, n_knowledge) %>%
+  group_by(year_of_birth_dec, distance) %>% 
+  summarise(lang_knowledge = (sum(n_knowledge))/n()*100) %>% 
+  ggplot(aes(year_of_birth_dec, lang_knowledge, fill = distance))+
+  geom_col(position = "dodge")+
+  labs(y = "", x = "")+
+  scale_fill_grey()+
+  scale_x_continuous(breaks = c(189:200*10),
+                     labels = paste0(c(189:200*10), "s"))+
+  scale_y_continuous(breaks = 0:5*20,
+                     labels = paste0(c(0:5*20), "%"),
+                     limits = c(0, 100))+
+  geom_hline(yintercept = 100, linetype = 3)+
+  theme(legend.title = element_blank())
+```
+
+
+## Figure 9
+Knowledge of neighbouring languages in Daghestan among men and women (born in 1900 – 1909)
+
+
+```{r}
+df %>%
+  filter(str_detect(distance, "neighbouring")) %>%
+  group_by(index, residence) %>%
+  mutate(n_knowledge = sum(knowledge)) %>%
+  group_by(year_of_birth_dec, sex) %>% 
+  mutate(number_of_people = n()) %>% 
+  count(year_of_birth_dec, sex, n_knowledge, number_of_people) %>%
+  ungroup() %>% 
+  mutate(r_knowledge = n/number_of_people*100,
+         n_knowledge = factor(n_knowledge),
+         year_of_birth_dec_s = paste0(year_of_birth_dec, "s")) %>% 
+  ggplot(aes(sex, r_knowledge, fill = n_knowledge))+
+  geom_col(position = position_stack(reverse = T))+
+  labs(y = "", x = "")+
+  scale_fill_grey()+
+  scale_y_continuous(breaks = 0:5*20,
+                     labels = paste0(c(0:5*20), "%"))+
+  facet_wrap(~year_of_birth_dec_s, strip.position = "bottom", nrow = 1)+
+  theme(panel.spacing=unit(.1, "lines"),
+        panel.border = element_blank(), 
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        legend.title=element_blank(),
+        axis.ticks = element_blank())
+```
+
+
+
+## Figure 15
+Knowledge of at least one neighbouring language in Daghestan among men and women for the whole time period
+
+```{r}
+df %>%
+  filter(str_detect(distance, "neighbour"),
+         language != "Russian") %>% 
+  group_by(index, residence, sex) %>% 
+  mutate(n_knowledge = if_else(sum(knowledge) > 0, 1, 0)) %>% 
+  distinct(index, residence, sex, year_of_birth_dec, n_knowledge) %>% 
+  group_by(year_of_birth_dec, sex) %>%
+  mutate(lang_knowledge = sum(n_knowledge)/n()*100,
+         number_of_people = n()) %>%
+  ggplot(aes(year_of_birth_dec, lang_knowledge, fill = sex))+
+  geom_col(position = "dodge")+
+  labs(y = "", x = "")+
+  scale_fill_grey()+
+  scale_x_continuous(breaks = c(189:200*10),
+                     labels = paste0(c(189:200*10), "s"))+
+  scale_y_continuous(breaks = 0:5*20,
+                     labels = paste0(c(0:5*20), "%"),
+                     limits = c(0, 100))+
+  theme(legend.title = element_blank())
+```
+
+## Figure NEW: Russian among females and males in Chuni
+
+```{r}
+df %>% 
+  filter(residence == "Chuni",
+         year_of_birth_dec > 1890,
+         str_detect(language, "Russian")) %>% 
+  group_by(year_of_birth_dec, sex) %>% 
+  summarise(knowledge_n = sum(knowledge),
+            number_of_people = n(),
+            knowledge = knowledge_n/number_of_people*100) %>% 
+  ggplot(aes(year_of_birth_dec, knowledge, fill = sex))+
+  geom_col(position = "dodge")+
+ # geom_text(aes(y = knowledge + 0.05))+
+#  geom_text(aes(y = - 0.05, label = number_of_people))+
+  scale_x_continuous(breaks = c(189:200*10),
+                     labels = paste0(c(189:200*10), "s"))+
+  scale_y_continuous(breaks = 0:5*20,
+                     labels = paste0(c(0:5*20), "%"),
+                     limits = c(0, 100))+
+  labs(y = "", x = "")+
+  scale_fill_grey()+
+  theme(legend.title = element_blank())
+```
+
+```{r}
+df %>% 
+  group_by(index, residence) %>% 
+  mutate(knowledge = sum(knowledge)) %>% 
+  ggplot(aes(`year of birth`, factor(knowledge)), shape = 20)+
+  geom_point()+
+  facet_wrap(~sex)+
+  labs(y = "", x = "")+
+  theme(strip.background = element_blank(),
+        strip.placement = "outside",
+        legend.title=element_blank(),
+        axis.ticks = element_blank())
+```
+
