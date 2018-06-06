@@ -1,5 +1,5 @@
 ---
-title: "Figures"
+title: 'R code for "Gendered multilingualism in highland Daghestan: story of a loss"'
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -12,17 +12,17 @@ library(tidyverse)
 options(scipen=999)
 theme_set(theme_bw())
 
-df <- read_csv("data.csv")
+df <- read_csv("https://raw.githubusercontent.com/LingConLab/2018_suplementary_for_Gendered_multilingualism_in_highland_Daghestan_story_of_a_loss/master/data.csv")
 ```
 
-## Figure 2
-Knowledge of Kumyk among men in Chuni for the whole time period
+## Figure 2.
+Knowledge of Kumyk among men in Chuni for the whole time period (percent of all men)
 
 ```{r}
 df %>% 
   filter(sex == "m",
          residence == "Chuni",
-         year_of_birth_dec > 1890,
+         year_of_birth_dec > 1900,
          year_of_birth_dec < 2000,
          str_detect(language, "Kumyk")) %>% 
   group_by(year_of_birth_dec, distance) %>% 
@@ -41,13 +41,37 @@ df %>%
   scale_fill_grey()
 ```
 
-## Figure 3
-Knowledge of Tsudakhar and Akusha among both genders in Chuni for the whole time period
+## Figure 3. 
+Knowledge of Russian among men and women in Chuni over the whole period
+
+```{r}
+df %>% 
+  filter(residence == "Chuni",
+         year_of_birth_dec > 1900,
+         str_detect(language, "Russian")) %>% 
+  group_by(year_of_birth_dec, sex) %>% 
+  summarise(knowledge_n = sum(knowledge),
+            number_of_people = n(),
+            knowledge = knowledge_n/number_of_people*100) %>% 
+  ggplot(aes(year_of_birth_dec, knowledge, fill = sex))+
+  geom_col(position = "dodge")+
+  scale_x_continuous(breaks = c(189:200*10),
+                     labels = paste0(c(189:200*10), "s"))+
+  scale_y_continuous(breaks = 0:5*20,
+                     labels = paste0(c(0:5*20), "%"),
+                     limits = c(0, 100))+
+  labs(y = "", x = "")+
+  scale_fill_grey()+
+  theme(legend.title = element_blank())
+```
+
+## Figure 4. 
+Knowledge of Tsudakhar and (or) Akusha among men and women in Chuni over the whole period
 
 ```{r}
 df %>% 
    filter(residence == "Chuni",
-          year_of_birth_dec > 1890,
+          year_of_birth_dec > 1900,
           year_of_birth_dec < 2000,
           str_detect(language, "Tsudakhar|Dargwa")) %>% 
   spread(language, knowledge) %>% 
@@ -70,8 +94,26 @@ df %>%
     theme(legend.title = element_blank())
 ```
 
-## Figure 4
-Knowledge of distant languages in Daghestan1 among men and women (born in 1900 – 1909)
+
+## Figure 5. 
+The number of languages spoken by men and women in highland Daghestan
+
+```{r}
+df %>% 
+  group_by(index, residence) %>% 
+  mutate(knowledge = sum(knowledge)) %>% 
+  ggplot(aes(`year of birth`, factor(knowledge)), shape = 20)+
+  geom_point()+
+  facet_wrap(~sex)+
+  labs(y = "", x = "")+
+  theme(strip.background = element_blank(),
+        strip.placement = "outside",
+        legend.title=element_blank(),
+        axis.ticks = element_blank())
+```
+
+## Figure 6. 
+Knowledge of distant languages in Daghestan for the whole time period
 
 ```{r}
 df %>%
@@ -104,17 +146,19 @@ df %>%
 ```
 
 
-## Figure 7
+
+## Figure 7. 
 Knowledge of Russian among men and women in Daghestan for the whole time period
 
 ```{r}
 df %>%
-  filter(str_detect(language, "Russian")) %>% 
-  spread(language, knowledge) %>%
-  group_by(year_of_birth_dec, sex) %>%
-  mutate(lang_knowledge = sum(Russian)/n()*100,
-         number_of_people = n()) %>%
-  ggplot(aes(year_of_birth_dec, lang_knowledge, fill = sex))+
+  filter(str_detect(distance, "distant|Russian")) %>% 
+  group_by(index, residence, distance) %>% 
+  mutate(n_knowledge = if_else(sum(knowledge) > 0, 1, 0)) %>% 
+  distinct(index, residence, year_of_birth_dec, distance, n_knowledge) %>%
+  group_by(year_of_birth_dec, distance) %>% 
+  summarise(lang_knowledge = (sum(n_knowledge))/n()*100) %>% 
+  ggplot(aes(year_of_birth_dec, lang_knowledge, fill = distance))+
   geom_col(position = "dodge")+
   labs(y = "", x = "")+
   scale_fill_grey()+
@@ -127,9 +171,8 @@ df %>%
   theme(legend.title = element_blank())
 ```
 
-
-## Figure 8
-Knowledge of Russian (green) and knowledge of distant languages (brown) among males in Daghestan during the whole time period
+## Figure 8. 
+Knowledge of Russian and distant languages among men in Daghestan for the whole time period
 
 ```{r}
 df %>%
@@ -154,8 +197,8 @@ df %>%
 ```
 
 
-## Figure 9
-Knowledge of neighbouring languages in Daghestan among men and women (born in 1900 – 1909)
+## Figure 9. 
+Knowledge of neighbouring languages in Daghestan among men and women for the whole time period
 
 
 ```{r}
@@ -187,8 +230,8 @@ df %>%
 
 
 
-## Figure 15
-Knowledge of at least one neighbouring language in Daghestan among men and women for the whole time period
+## Figure 10.
+Knowledge of at least one neighbouring language in Daghestan among men and women for the whole time period 
 
 ```{r}
 df %>%
@@ -211,43 +254,3 @@ df %>%
                      limits = c(0, 100))+
   theme(legend.title = element_blank())
 ```
-
-## Figure NEW: Russian among females and males in Chuni
-
-```{r}
-df %>% 
-  filter(residence == "Chuni",
-         year_of_birth_dec > 1890,
-         str_detect(language, "Russian")) %>% 
-  group_by(year_of_birth_dec, sex) %>% 
-  summarise(knowledge_n = sum(knowledge),
-            number_of_people = n(),
-            knowledge = knowledge_n/number_of_people*100) %>% 
-  ggplot(aes(year_of_birth_dec, knowledge, fill = sex))+
-  geom_col(position = "dodge")+
- # geom_text(aes(y = knowledge + 0.05))+
-#  geom_text(aes(y = - 0.05, label = number_of_people))+
-  scale_x_continuous(breaks = c(189:200*10),
-                     labels = paste0(c(189:200*10), "s"))+
-  scale_y_continuous(breaks = 0:5*20,
-                     labels = paste0(c(0:5*20), "%"),
-                     limits = c(0, 100))+
-  labs(y = "", x = "")+
-  scale_fill_grey()+
-  theme(legend.title = element_blank())
-```
-
-```{r}
-df %>% 
-  group_by(index, residence) %>% 
-  mutate(knowledge = sum(knowledge)) %>% 
-  ggplot(aes(`year of birth`, factor(knowledge)), shape = 20)+
-  geom_point()+
-  facet_wrap(~sex)+
-  labs(y = "", x = "")+
-  theme(strip.background = element_blank(),
-        strip.placement = "outside",
-        legend.title=element_blank(),
-        axis.ticks = element_blank())
-```
-
