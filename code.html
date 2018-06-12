@@ -255,13 +255,13 @@ ggsave(p_6, filename = &quot;Fig_6.eps&quot;, device = &quot;eps&quot;)</code></
 <h2>Figure 7.</h2>
 <p>Knowledge of Russian among men and women in Daghestan for the whole time period</p>
 <pre class="r"><code>df %&gt;%
-  filter(str_detect(distance, &quot;distant|Russian&quot;)) %&gt;% 
-  group_by(index, residence, distance) %&gt;% 
+  filter(str_detect(distance, &quot;Russian&quot;)) %&gt;% 
+  group_by(index, residence, sex) %&gt;% 
   mutate(n_knowledge = if_else(sum(knowledge) &gt; 0, 1, 0)) %&gt;% 
-  distinct(index, residence, year_of_birth_dec, distance, n_knowledge) %&gt;%
-  group_by(year_of_birth_dec, distance) %&gt;% 
+  distinct(index, residence, year_of_birth_dec, sex, n_knowledge) %&gt;%
+  group_by(year_of_birth_dec, sex) %&gt;% 
   summarise(lang_knowledge = (sum(n_knowledge))/n()*100) %&gt;% 
-  ggplot(aes(year_of_birth_dec, lang_knowledge, fill = distance))+
+  ggplot(aes(year_of_birth_dec, lang_knowledge, fill = sex))+
   geom_col(position = &quot;dodge&quot;)+
   labs(y = &quot;&quot;, x = &quot;&quot;)+
   scale_fill_grey()+

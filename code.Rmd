@@ -162,13 +162,13 @@ Knowledge of Russian among men and women in Daghestan for the whole time period
 
 ```{r}
 df %>%
-  filter(str_detect(distance, "distant|Russian")) %>% 
-  group_by(index, residence, distance) %>% 
+  filter(str_detect(distance, "Russian")) %>% 
+  group_by(index, residence, sex) %>% 
   mutate(n_knowledge = if_else(sum(knowledge) > 0, 1, 0)) %>% 
-  distinct(index, residence, year_of_birth_dec, distance, n_knowledge) %>%
-  group_by(year_of_birth_dec, distance) %>% 
+  distinct(index, residence, year_of_birth_dec, sex, n_knowledge) %>%
+  group_by(year_of_birth_dec, sex) %>% 
   summarise(lang_knowledge = (sum(n_knowledge))/n()*100) %>% 
-  ggplot(aes(year_of_birth_dec, lang_knowledge, fill = distance))+
+  ggplot(aes(year_of_birth_dec, lang_knowledge, fill = sex))+
   geom_col(position = "dodge")+
   labs(y = "", x = "")+
   scale_fill_grey()+
