@@ -41,6 +41,7 @@ df %>%
   scale_fill_grey() ->
   p_2
 ggsave(p_2, filename = "Fig_2.eps", device = "eps")
+p_2
 ```
 
 ## Figure 3. 
@@ -67,6 +68,7 @@ df %>%
   theme(legend.title = element_blank())->
   p_3
 ggsave(p_3, filename = "Fig_3.eps", device = "eps")
+p_3
 ```
 
 ## Figure 4. 
@@ -98,6 +100,7 @@ df %>%
     theme(legend.title = element_blank())->
   p_4
 ggsave(p_4, filename = "Fig_4.eps", device = "eps")
+p_4
 ```
 
 
@@ -118,6 +121,7 @@ df %>%
         axis.ticks = element_blank())->
   p_5
 ggsave(p_5, filename = "Fig_5.eps", device = "eps")
+p_5
 ```
 
 ## Figure 6. 
@@ -153,6 +157,7 @@ df %>%
         axis.ticks = element_blank())->
   p_6
 ggsave(p_6, filename = "Fig_6.eps", device = "eps")
+p_6
 ```
 
 
@@ -181,6 +186,7 @@ df %>%
   theme(legend.title = element_blank())->
   p_7
 ggsave(p_7, filename = "Fig_7.eps", device = "eps")
+p_7
 ```
 
 ## Figure 8. 
@@ -208,6 +214,7 @@ df %>%
   theme(legend.title = element_blank())->
   p_8
 ggsave(p_8, filename = "Fig_8.eps", device = "eps")
+p_8
 ```
 
 
@@ -242,6 +249,7 @@ df %>%
         axis.ticks = element_blank())->
   p_9
 ggsave(p_9, filename = "Fig_9.eps", device = "eps")
+p_9
 ```
 
 
@@ -271,4 +279,5 @@ df %>%
   theme(legend.title = element_blank())->
   p_10
 ggsave(p_10, filename = "Fig_10.eps", device = "eps")
+p_10
 ```
